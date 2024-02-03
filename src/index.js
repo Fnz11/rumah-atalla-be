@@ -7,6 +7,7 @@ require("dotenv").config();
 // const { getMessaging, getToken } = require("firebase/messaging");
 
 const app = express();
+const router = express.Router();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI;
 
@@ -30,7 +31,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-app.router().get("/", (req, res) => {
+router.get("/", (req, res) => {
   res.send("Hii, Rumah Attala here");
 });
 app.use("/products", require("./routes/productRoutes"));
