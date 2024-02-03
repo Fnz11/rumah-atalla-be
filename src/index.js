@@ -30,7 +30,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-router.get("/", (req, res) => {
+app.router().get("/", (req, res) => {
   res.send("Hii, Rumah Attala here");
 });
 app.use("/products", require("./routes/productRoutes"));
