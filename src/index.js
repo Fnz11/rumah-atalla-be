@@ -21,15 +21,15 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
-mongoose
-  .connect(DB_URI)
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB:", err.message);
-  });
-
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(DB_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/promos", require("./routes/promoRoutes"));
@@ -38,6 +38,8 @@ app.use("/api/foods", require("./routes/foodRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Server is running on port http://localhost:${PORT}`);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port http://localhost:${PORT}`);
+  });
 });
