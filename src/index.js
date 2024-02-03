@@ -30,12 +30,15 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/reviews", require("./routes/reviewRoutes"));
-app.use("/api/promos", require("./routes/promoRoutes"));
-app.use("/api/transactions", require("./routes/transactionRoutes"));
-app.use("/api/foods", require("./routes/foodRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
+router.get("/", (req, res) => {
+  res.send("Hii, Rumah Attala here");
+});
+app.use("/products", require("./routes/productRoutes"));
+app.use("/reviews", require("./routes/reviewRoutes"));
+app.use("/promos", require("./routes/promoRoutes"));
+app.use("/transactions", require("./routes/transactionRoutes"));
+app.use("/foods", require("./routes/foodRoutes"));
+app.use("/users", require("./routes/userRoutes"));
 
 // Start Server
 connectDB().then(() => {
