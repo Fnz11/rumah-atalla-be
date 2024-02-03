@@ -10,6 +10,7 @@ const { Workbook } = require("exceljs");
 
 const getAllPromos = async (req, res) => {
   try {
+    console.log("BOROROROR")
     const promos = await findAllPromos();
     return res.status(200).json(promos);
   } catch (error) {

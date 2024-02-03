@@ -52,7 +52,7 @@ const getUserByEmail = async (req, res) => {
 const downloadUsersData = async (req, res) => {
   try {
     const users = await findAllUsers();
-    
+
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Users Data");
     const applyStyling = (row) => {
@@ -110,20 +110,14 @@ const downloadUsersData = async (req, res) => {
       worksheet.getColumn(i).width = 30;
     }
 
-    const excelPath = path.join(
-      __dirname,
-      "../excel/UsersData.xlsx"
-    );
+    const excelPath = path.join(__dirname, "../excel/UsersData.xlsx");
     await workbook.xlsx.writeFile(excelPath);
 
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=UsersData.xlsx"
-    );
+    res.setHeader("Content-Disposition", "attachment; filename=UsersData.xlsx");
     res.sendFile(excelPath);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -143,6 +137,7 @@ const deleteUser = async (req, res) => {
 const signInUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("WOIOWIOIOIO", email, password);
 
     // Cari pengguna berdasarkan email
     const user = await findUserByEmail(email);
@@ -153,7 +148,7 @@ const signInUser = async (req, res) => {
     // console.log(password, user[0].password);
     const isValidPassword = await bcrypt.compare(password, user[0].password);
     // if (!isValidPassword) {
-      // return res.status(401).json({ message: "Invalid credentials" });
+    // return res.status(401).json({ message: "Invalid credentials" });
     // }
     console.log(user);
     // Buat token JWT untuk autentikasi
@@ -238,5 +233,5 @@ module.exports = {
   deleteUser,
   signInUser,
   validateToken,
-  downloadUsersData
+  downloadUsersData,
 };

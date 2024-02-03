@@ -7,7 +7,6 @@ require("dotenv").config();
 // const { getMessaging, getToken } = require("firebase/messaging");
 
 const app = express();
-const router = express.Router();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI;
 
@@ -31,15 +30,16 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-router.get("/", (req, res) => {
-  res.send("Hii, Rumah Attala here");
-});
+
 app.use("/products", require("./routes/productRoutes"));
 app.use("/reviews", require("./routes/reviewRoutes"));
 app.use("/promos", require("./routes/promoRoutes"));
 app.use("/transactions", require("./routes/transactionRoutes"));
 app.use("/foods", require("./routes/foodRoutes"));
 app.use("/users", require("./routes/userRoutes"));
+// app.all("*", (req, res) => {
+//   res.json({ "every thing": "is awesome" });
+// });
 
 // Start Server
 connectDB().then(() => {

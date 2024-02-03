@@ -8,7 +8,7 @@ const {
 const path = require("path");
 const { Workbook } = require("exceljs");
 const admin = require("firebase-admin");
-const serviceAccount = require("../credentials/ServiceAccountKey.json");
+const serviceAccount = require("../credentials/serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
