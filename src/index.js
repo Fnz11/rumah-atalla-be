@@ -2,17 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-// const { initializeApp } = require("firebase/app");
-// const { getAnalytics } = require("firebase/analytics");
-// const { getMessaging, getToken } = require("firebase/messaging");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI;
 
 const corsOptions = {
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "DELETE"], // Tambahkan PATCH di sini
+  origin: ["http://localhost:5173", "https://rumah-atalla.vercel.app"],
+  methods: ["GET", "POST", "PATCH", "DELETE"],
 };
 
 // Middleware
