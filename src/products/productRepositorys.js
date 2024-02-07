@@ -2,7 +2,7 @@ const Product = require("../../models/productModel");
 
 // GET ALL
 const getAllProducts = async () => {
-  return await Product.find({});
+  return await Product.find({}).lean();
 };
 
 //   GET BY ID
@@ -12,12 +12,13 @@ const getProductById = async (productId) => {
 
 //   CREATE
 const createProduct = async (productData) => {
-  console.log("CREATE", productData)
+  console.log("CREATE", productData);
   return await Product.create(productData);
 };
 
 //   UPDATE
 const updateProduct = async (productId, newData) => {
+  // console.log("UPDATE", newData);
   return await Product.findByIdAndUpdate(productId, newData, { new: true });
 };
 

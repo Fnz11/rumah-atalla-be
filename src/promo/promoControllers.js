@@ -7,10 +7,10 @@ const {
 } = require("./promoServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
+const cloudinary = require("../utils/cloudinary");
 
 const getAllPromos = async (req, res) => {
   try {
-    console.log("BOROROROR")
     const promos = await findAllPromos();
     return res.status(200).json(promos);
   } catch (error) {
@@ -189,8 +189,18 @@ const downloadFoodsPromo = async (req, res) => {
 };
 
 const createPromo = async (req, res) => {
+  const promoData = req.body;
   try {
-    const promoData = req.body;
+    if (promoData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(promoData.imageUrl.url, {
+        folder: "promos",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      promoData.imageUrl = newImage;
+    }
     const newPromo = await insertPromo(promoData);
     return res.status(201).json(newPromo);
   } catch (error) {
@@ -199,9 +209,20 @@ const createPromo = async (req, res) => {
 };
 
 const updatePromo = async (req, res) => {
+  const { promoId } = req.params;
+  const newData = req.body;
   try {
-    const { promoId } = req.params;
-    const newData = req.body;
+    console.log(newData.imageUrl);
+    if (newData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(newData.imageUrl.url, {
+        folder: "promos",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      newData.imageUrl = newImage;
+    }
     const updatedPromo = await changePromo(promoId, newData);
     if (!updatedPromo) {
       return res.status(404).json({ message: "Promo not found" });
@@ -232,5 +253,5 @@ module.exports = {
   updatePromo,
   deletePromo,
   downloadFashionsPromo,
-  downloadFoodsPromo
+  downloadFoodsPromo,
 };

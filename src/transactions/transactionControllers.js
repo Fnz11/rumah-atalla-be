@@ -5,6 +5,11 @@ const {
   changeTransaction,
   // deleteTransactionById,
 } = require("./transactionServices");
+const { changeFood } = require("../foods/foodServices");
+const {
+  changeProduct,
+  findProductById,
+} = require("../products/productServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
 const admin = require("firebase-admin");
@@ -226,7 +231,147 @@ const createTransaction = async (req, res) => {
       },
       topic: "owner_notifications",
     });
-    console.log("CONTROL");
+    if (transactionData?.type === "foods") {
+      transactionData?.products?.map(async (product) => {
+        const newProduct = await changeFood(product.productId, {
+          stock: product.stock - product.qty,
+        });
+        return newProduct;
+      });
+    } else if (transactionData?.type === "fashions") {
+      // NEW PRODUCTS
+      let newProducts = [];
+      // MAPPING PRODUCTS BOUGHT
+      transactionData?.products?.map((product) => {
+        // NEW STOCK
+        const newStock = product?.stock - product?.qty;
+
+        // NEW SIZE THAT HAS NEW STOCK
+        const newSize = {
+          ...product?.sizes[product?.indexSize],
+          stock: newStock,
+        };
+
+        // NEW SIZES THAT HAS NEW SIZE BEFORE
+        const newSizes = [...product?.sizes];
+        newSizes[product?.indexSize] = newSize;
+
+        // CHECK IF PRODUCT ALREADY EXISTS ON NEW PRODUCTS
+        const isExist = newProducts.find(
+          (newProduct) => newProduct?.productId === product?.productId
+        );
+
+        // IF PRODUCT ALREADY EXISTS
+        if (isExist) {
+          // FIND INDEX OF PRODUCT
+          const indexProduct = newProducts.findIndex(
+            (newProduct) => newProduct?.productId === product?.productId
+          );
+
+          // CHECK IF VARIANT ALREADY EXISTS
+          const isExistVariant = newProducts[indexProduct]?.variants?.find(
+            (variant) =>
+              variant?.name === product?.variants[product?.indexVariant]?.name
+          );
+
+          // IF VARIANT ALREADY EXISTS
+          if (isExistVariant) {
+            // FIND INDEX OF VARIANT
+            const indexVar = newProducts[indexProduct]?.variants?.findIndex(
+              (variant) =>
+                variant?.name === product?.variants[product?.indexVariant]?.name
+            );
+
+            // console.log(
+            //   "TEST DISINI",
+            //   newProducts[indexProduct]?.variants[0]?.name,
+            //   indexVar,
+            //   product?.variants[product?.indexVariant]?.name
+            //   // product?.variants[product?.indexVariant]?.name,
+            //   // product?.sizes[product?.indexSize]?.size
+            // );
+
+            // UPDATE VARIANT WITH NEW SIZE
+            const updatedVariant = {
+              ...newProducts[indexProduct]?.variants[indexVar],
+              size: [
+                ...newProducts[indexProduct]?.variants[indexVar]?.size,
+                newSize,
+              ],
+            };
+            // console.log(
+            //   "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBN",
+            //   newProducts[indexProduct]?.variants
+            // );
+            // UPDATE PRODUCT WITH UPDATED VARIANT
+            if (
+              newProducts[indexProduct] &&
+              newProducts[indexProduct].variants
+            ) {
+              newProducts[indexProduct].variants[indexVar] = updatedVariant;
+            }
+          }
+
+          // IF VARIANT DOSENT EXISTS
+          else {
+            // MAKE NEW VARIANT
+            const newVariant = {
+              ...product?.variants[product?.indexVariant],
+              size: newSizes,
+            };
+
+            // ADD NEW VARIANT
+            newProducts[indexProduct]?.variants.push(newVariant);
+          }
+        }
+        // IF PRODUCT DOESNT EXIST
+        else {
+          // MAKE NEW PRODUCT
+          const newVariant = {
+            ...product?.variants[product?.indexVariant],
+            size: newSizes,
+          };
+
+          console.log("INI NEW SIZE", newVariant);
+          console.log("NENEW1", newProducts);
+
+          // ADD NEW PRODUCT WITH OLD VARIANTS
+          newProducts.push({
+            productId: product?.productId,
+            oldVariants: product?.variants,
+            variants: [newVariant],
+          });
+          console.log("NENEW2", newProducts[0].variants[0]);
+        }
+        // console.log("NENEW", newProducts[0]?.variants[0]?.size[0]);
+        return newProducts;
+      });
+
+      // UPDATE PRODUCTS
+      const updateProducts = newProducts.map(async (product) => {
+        // MERGE NEW VARIANTS AND OLD VARIANTS
+
+        let newVariants = [...product?.variants];
+        product?.oldVariants.map((oldVariant) => {
+          const isExist = newVariants.find(
+            (newVariant) => newVariant?.name === oldVariant?.name
+          );
+          if (!isExist) {
+            newVariants.push(oldVariant);
+          }
+        });
+
+        // const newVariants =
+
+        // UPDATE PRODUCT
+        const newProduct = await changeProduct(product.productId, {
+          variants: newVariants,
+        });
+        return newProduct;
+      });
+
+      await Promise.all(updateProducts);
+    }
     const newTransaction = await insertTransaction(transactionData);
     return res.status(201).json(newTransaction);
   } catch (error) {

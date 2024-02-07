@@ -7,7 +7,8 @@ const promoSchema = new Schema({
     required: true,
   },
   imageUrl: {
-    type: String,
+    url: { type: String },
+    public_id: { type: String },
   },
   products: {
     type: [String],

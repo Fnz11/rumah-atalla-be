@@ -11,6 +11,7 @@ const {
 } = require("./userServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
+const cloudinary = require("../utils/cloudinary");
 
 const SALT_ROUNDS = 10;
 
@@ -195,8 +196,18 @@ const validateToken = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
+  const userData = req.body;
   try {
-    const userData = req.body;
+    if (userData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(userData.imageUrl.url, {
+        folder: "users",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      userData.imageUrl = newImage;
+    }
     if (userData.email && !validator.isEmail(userData.email)) {
       throw new Error("Email tidak valid");
     }
@@ -211,9 +222,19 @@ const createUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
+  const { userId } = req.params;
+  const updatedData = req.body;
   try {
-    const { userId } = req.params;
-    const updatedData = req.body;
+    if (updatedData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(updatedData.imageUrl.url, {
+        folder: "users",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      updatedData.imageUrl = newImage;
+    }
     if (updatedData.email && !validator.isEmail(updatedData.email)) {
       throw new Error("Email tidak valid");
     }

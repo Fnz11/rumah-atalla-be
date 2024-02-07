@@ -6,12 +6,12 @@ const foodSchema = new mongoose.Schema({
     required: true,
   },
   imageUrl: {
-    type: String,
-    required: true,
+    url: { type: String },
+    public_id: { type: String },
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   stock: {
     type: Number,

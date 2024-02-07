@@ -38,7 +38,8 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   imageUrl: {
-    type: String,
+    url: { type: String },
+    public_id: { type: String },
   },
   transactions: {
     type: {

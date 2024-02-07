@@ -6,6 +6,7 @@ const {
   deleteProductById,
 } = require("./productServices");
 const path = require("path");
+const cloudinary = require("../utils/cloudinary");
 const { Workbook } = require("exceljs");
 
 //   GET ALL
@@ -106,8 +107,28 @@ const downloadFashionProductsData = async (req, res) => {
 
 //   CREATE
 const createProduct = async (req, res) => {
+  const productData = req.body;
+  let newImageUrl = [...productData.imageUrl];
+
   try {
-    const productData = req.body;
+    const uploadToCloudinary = productData.imageUrl.map(
+      async (image, index) => {
+        if (image.url) {
+          try {
+            const result = await cloudinary.uploader.upload(image.url, {
+              folder: "fashions",
+            });
+            newImageUrl[index].url = result.secure_url;
+            newImageUrl[index].public_id = result.public_id;
+          } catch (error) {
+            console.error("Error uploading image:", error);
+          }
+        }
+      }
+    );
+    await Promise.all(uploadToCloudinary);
+    productData.imageUrl = newImageUrl;
+
     const newProduct = await insertProduct(productData);
     return res.status(201).json(newProduct);
   } catch (error) {
@@ -117,9 +138,27 @@ const createProduct = async (req, res) => {
 
 //   UPDATE
 const updateProduct = async (req, res) => {
+  const { productId } = req.params;
+  const newData = req.body;
+  let newImageUrl = [...newData.imageUrl];
+
   try {
-    const { productId } = req.params;
-    const newData = req.body;
+    const uploadToCloudinary = newData.imageUrl.map(async (image, index) => {
+      if (image.url) {
+        try {
+          const result = await cloudinary.uploader.upload(image.url, {
+            folder: "fashions",
+          });
+          newImageUrl[index].url = result.secure_url;
+          newImageUrl[index].public_id = result.public_id;
+        } catch (error) {
+          console.error("Error uploading image:", error);
+        }
+      }
+    });
+    await Promise.all(uploadToCloudinary);
+    newData.imageUrl = newImageUrl;
+
     const updatedProduct = await changeProduct(productId, newData);
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });

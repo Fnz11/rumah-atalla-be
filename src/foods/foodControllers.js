@@ -7,6 +7,7 @@ const {
 } = require("./foodServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
+const cloudinary = require("../utils/cloudinary");
 
 //   GET ALL
 const getAllFoods = async (req, res) => {
@@ -106,9 +107,18 @@ const downloadFoodProductsData = async (req, res) => {
 
 //   CREATE
 const createFood = async (req, res) => {
+  const foodData = req.body;
   try {
-    const foodData = req.body;
-    console.log("FOOD DATA", foodData);
+    if (foodData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(foodData.imageUrl.url, {
+        folder: "foods",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      foodData.imageUrl = newImage;
+    }
     const newFood = await insertFood(foodData);
     return res.status(201).json(newFood);
   } catch (error) {
@@ -118,9 +128,19 @@ const createFood = async (req, res) => {
 
 //   UPDATE
 const updateFood = async (req, res) => {
+  const { foodId } = req.params;
+  const newData = req.body;
   try {
-    const { foodId } = req.params;
-    const newData = req.body;
+    if (newData.imageUrl.url) {
+      const result = await cloudinary.uploader.upload(newData.imageUrl.url, {
+        folder: "foods",
+      });
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      newData.imageUrl = newImage;
+    }
     const updatedFood = await changeFood(foodId, newData);
     if (!updatedFood) {
       return res.status(404).json({ message: "Food not found" });
@@ -151,5 +171,5 @@ module.exports = {
   createFood,
   updateFood,
   deleteFood,
-  downloadFoodProductsData
+  downloadFoodProductsData,
 };

@@ -19,6 +19,7 @@ const insertFood = async (foodData) => {
 };
 
 const changeFood = async (foodId, newData) => {
+  console.log("NEW DATA", newData);
   return await updateFood(foodId, newData);
 };
 

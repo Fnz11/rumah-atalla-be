@@ -12,21 +12,13 @@ const productSchema = new mongoose.Schema({
     type: String,
   },
   category: {
-    type: String,
+    type: [String],
   },
-  // price: {
-  //   type: Number,
-  //   required: true,
-  // },
   store: {
     type: String,
     default: "web",
     required: true,
   },
-  // stock: {
-  //   type: Number,
-  //   required: true,
-  // },
   brand: {
     type: String,
   },
@@ -34,6 +26,7 @@ const productSchema = new mongoose.Schema({
     {
       name: { type: String },
       url: { type: String },
+      public_id: { type: String },
     },
   ],
   variants: [

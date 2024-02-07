@@ -23,6 +23,7 @@ const insertProduct = async (productData) => {
 
 // UPDATE
 const changeProduct = async (productId, newData) => {
+  // console.log("UPDATE", productId, newData);
   return await updateProduct(productId, newData);
 };
 
