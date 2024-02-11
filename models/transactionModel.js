@@ -9,6 +9,9 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  kasirId: {
+    type: String,
+  },
   type: {
     type: String,
     enum: ["foods", "fashions"],

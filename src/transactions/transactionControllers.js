@@ -6,10 +6,8 @@ const {
   // deleteTransactionById,
 } = require("./transactionServices");
 const { changeFood } = require("../foods/foodServices");
-const {
-  changeProduct,
-  findProductById,
-} = require("../products/productServices");
+const { changeProduct } = require("../products/productServices");
+const { findUserById, changeUser } = require("../users/userServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
 const admin = require("firebase-admin");
@@ -224,6 +222,8 @@ const getTransactionById = async (req, res) => {
 const createTransaction = async (req, res) => {
   try {
     const transactionData = req.body;
+
+    // SEND NOTIFICATION TO OWNER
     admin.messaging().send({
       notification: {
         title: "Transaksi Baru",
@@ -231,6 +231,8 @@ const createTransaction = async (req, res) => {
       },
       topic: "owner_notifications",
     });
+
+    // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
       transactionData?.products?.map(async (product) => {
         const newProduct = await changeFood(product.productId, {
@@ -282,33 +284,11 @@ const createTransaction = async (req, res) => {
                 variant?.name === product?.variants[product?.indexVariant]?.name
             );
 
-            // console.log(
-            //   "TEST DISINI",
-            //   newProducts[indexProduct]?.variants[0]?.name,
-            //   indexVar,
-            //   product?.variants[product?.indexVariant]?.name
-            //   // product?.variants[product?.indexVariant]?.name,
-            //   // product?.sizes[product?.indexSize]?.size
-            // );
-
             // UPDATE VARIANT WITH NEW SIZE
-            const updatedVariant = {
-              ...newProducts[indexProduct]?.variants[indexVar],
-              size: [
-                ...newProducts[indexProduct]?.variants[indexVar]?.size,
-                newSize,
-              ],
-            };
-            // console.log(
-            //   "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBN",
-            //   newProducts[indexProduct]?.variants
-            // );
-            // UPDATE PRODUCT WITH UPDATED VARIANT
-            if (
-              newProducts[indexProduct] &&
-              newProducts[indexProduct].variants
-            ) {
-              newProducts[indexProduct].variants[indexVar] = updatedVariant;
+            if (newProducts[indexProduct]?.variants[indexVar]) {
+              newProducts[indexProduct].variants[indexVar].size[
+                product.indexSize
+              ] = newSize;
             }
           }
 
@@ -332,9 +312,6 @@ const createTransaction = async (req, res) => {
             size: newSizes,
           };
 
-          console.log("INI NEW SIZE", newVariant);
-          console.log("NENEW1", newProducts);
-
           // ADD NEW PRODUCT WITH OLD VARIANTS
           newProducts.push({
             productId: product?.productId,
@@ -354,7 +331,7 @@ const createTransaction = async (req, res) => {
         let newVariants = [...product?.variants];
         product?.oldVariants.map((oldVariant) => {
           const isExist = newVariants.find(
-            (newVariant) => newVariant?.name === oldVariant?.name
+            (newVariant) => newVariant?._id === oldVariant?._id
           );
           if (!isExist) {
             newVariants.push(oldVariant);
@@ -372,6 +349,21 @@ const createTransaction = async (req, res) => {
 
       await Promise.all(updateProducts);
     }
+
+    // UPDATE TRANSACTION IN KASIR
+    const kasirData = await findUserById(transactionData?.kasirId);
+    if (kasirData?.transactions?.pending) {
+      const newKasirTransactions = kasirData?.transactions;
+      newKasirTransactions.pending++;
+      console.log("NEW KASIR TRANSACTION", newKasirTransactions);
+      const newKasirData = kasirData;
+      newKasirData.transactions = newKasirTransactions;
+
+      console.log("NEW KASIR DATA", newKasirData);
+      await changeUser(kasirData?._id, newKasirData);
+    }
+
+    // INSERT TRANSACTION
     const newTransaction = await insertTransaction(transactionData);
     return res.status(201).json(newTransaction);
   } catch (error) {
@@ -380,10 +372,55 @@ const createTransaction = async (req, res) => {
 };
 
 const updateTransaction = async (req, res) => {
+  const { transactionId } = req.params;
+  const newData = req.body;
+  // UPDATE TRANSACTION
+  const updatedTransactionData = {
+    status: newData.status,
+  };
+
   try {
-    const { transactionId } = req.params;
-    const newData = req.body;
-    const updatedTransaction = await changeTransaction(transactionId, newData);
+    // CHECK IF KASIR VALID
+    const oldTransaction = await findTransactionById(transactionId);
+    if (oldTransaction?.kasirId && newData?.kasirId) {
+      if (oldTransaction?.kasirId != newData?.kasirId) {
+        return res
+          .status(400)
+          .json({ message: "Transaction cannot be updated" });
+      }
+    } else {
+      if (oldTransaction?.kasir !== newData?.kasir) {
+        return res
+          .status(400)
+          .json({ message: "Transaction cannot be updated" });
+      }
+    }
+
+    // UPDATE TRANSACTION IN KASIR
+    const kasirData = await findUserById(newData?.kasirId);
+    const newKasirTransactions = kasirData?.transactions;
+    if (oldTransaction?.status === "pending") {
+      newKasirTransactions.pending--;
+    } else if (oldTransaction?.status === "success") {
+      newKasirTransactions.success--;
+    } else if (oldTransaction?.status === "failed") {
+      newKasirTransactions.failed--;
+    }
+    if (updatedTransactionData.status === "pending") {
+      newKasirTransactions.pending++;
+    } else if (updatedTransactionData.status === "success") {
+      newKasirTransactions.success++;
+    } else if (updatedTransactionData.status === "failed") {
+      newKasirTransactions.failed++;
+    }
+    const newKasirData = kasirData;
+    newKasirData.transactions = newKasirTransactions;
+    await changeUser(kasirData?._id, newKasirData);
+
+    const updatedTransaction = await changeTransaction(
+      transactionId,
+      updatedTransactionData
+    );
     if (!updatedTransaction) {
       return res.status(404).json({ message: "Transaction not found" });
     }
