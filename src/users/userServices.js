@@ -20,7 +20,7 @@ const findUserByEmail = async (userEmail) => {
 };
 
 const insertUser = async (userData) => {
-  console.log("SERVO", userData)
+  console.log("SERVO", userData);
   return await createUser(userData);
 };
 

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+const { reloadUserToken } = require("./utils/firebase");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(DB_URI);
+    reloadUserToken();
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.log(error);

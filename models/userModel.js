@@ -15,6 +15,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  FCMToken: {
+    type: [String],
+  },
   role: {
     type: String,
     enum: ["admin", "owner"],
@@ -28,7 +31,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: false,
   },
-  
+
   createdAt: {
     type: Date,
     default: Date.now,

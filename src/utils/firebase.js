@@ -1,15 +1,34 @@
 const admin = require("firebase-admin");
+const { findAllUsers } = require("../users/userServices");
 const serviceAccount = require("../credentials/serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  databaseURL: "http://localhost:3000",
+  projectId: "test-raffi",
 });
 
+let tokens = [];
+const reloadUserToken = async () => {
+  try {
+    const users = await findAllUsers();
+    if (users && users?.length > 0) {
+      users?.map((user) => {
+        if (user.role === "owner") {
+          tokens.push(...user.FCMToken);
+        }
+      });
+    }
+    console.log(tokens);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const sendNotification = ({ title, body }) => {
-  var registrationToken = [
-    "fZgboVvvtjKstCkdEdJPnx:APA91bEduCXSe641l8vB7yUm1fs6VLowWQ26c_eyHnNGdhY7-zkERHdLZm_iW91lbxcazVKIOOA0_Sp33aN7alcrOmynLXuwML3BWINSNmJ0yh3xaU716ZLVXx9YbeOLz1qrKK5j6d49",
-    "ffu0Aeu1whDq-YSR3512L7:APA91bGhBMgd9E5K-QG4ZXfbWJX0rmIXloABdTM6RRwNMKevuwDgE3W_xIshmclWw0pqQQOOnkW_GPbX304FAXyq0R7wZ-S98c3tEAGZE7gQUgfu9sfWrHw6U_cgalysLHRlzc3AGZya",
-  ];
+  if (tokens.length == 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
   var payload = {
     notification: {
       title: title,
@@ -25,10 +44,9 @@ const sendNotification = ({ title, body }) => {
     timeToLive: 60 * 60,
   };
   //main function which sends messages.
-  console.log("registration token : ", registrationToken, payload);
   admin
     .messaging()
-    .sendToDevice(registrationToken, payload, options)
+    .sendToDevice(tokens, payload, options)
     .then(function (response) {
       console.log("successfully sent message : ", response);
     })
@@ -37,4 +55,4 @@ const sendNotification = ({ title, body }) => {
     });
 };
 
-module.exports = { sendNotification };
+module.exports = { sendNotification, reloadUserToken };

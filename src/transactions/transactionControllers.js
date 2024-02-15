@@ -219,7 +219,7 @@ const createTransaction = async (req, res) => {
     const transactionData = req.body;
 
     sendNotification({
-      title: "New Transaction",
+      title: "New Transaction " + transactionData?.kasir,
       body: "New transaction has been created",
     });
 

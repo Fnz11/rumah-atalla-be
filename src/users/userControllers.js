@@ -224,18 +224,22 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   const { userId } = req.params;
   const updatedData = req.body;
+  console.log(updatedData);
   try {
-    if (updatedData.imageUrl.url) {
-      const result = await cloudinary.uploader.upload(updatedData.imageUrl.url, {
-        folder: "users",
-      });
+    if (updatedData?.imageUrl?.url) {
+      const result = await cloudinary.uploader.upload(
+        updatedData.imageUrl.url,
+        {
+          folder: "users",
+        }
+      );
       const newImage = {
         url: result.secure_url,
         public_id: result.public_id,
       };
       updatedData.imageUrl = newImage;
     }
-    if (updatedData.email && !validator.isEmail(updatedData.email)) {
+    if (updatedData?.email && !validator.isEmail(updatedData?.email)) {
       throw new Error("Email tidak valid");
     }
     const updatedUser = await changeUser(userId, updatedData);
