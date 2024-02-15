@@ -8,9 +8,7 @@ admin.initializeApp({
 const sendNotification = ({ title, body }) => {
   var registrationToken = [
     "fZgboVvvtjKstCkdEdJPnx:APA91bEduCXSe641l8vB7yUm1fs6VLowWQ26c_eyHnNGdhY7-zkERHdLZm_iW91lbxcazVKIOOA0_Sp33aN7alcrOmynLXuwML3BWINSNmJ0yh3xaU716ZLVXx9YbeOLz1qrKK5j6d49",
-    [
-      "ffu0Aeu1whDq-YSR3512L7:APA91bGhBMgd9E5K-QG4ZXfbWJX0rmIXloABdTM6RRwNMKevuwDgE3W_xIshmclWw0pqQQOOnkW_GPbX304FAXyq0R7wZ-S98c3tEAGZE7gQUgfu9sfWrHw6U_cgalysLHRlzc3AGZya",
-    ],
+    "ffu0Aeu1whDq-YSR3512L7:APA91bGhBMgd9E5K-QG4ZXfbWJX0rmIXloABdTM6RRwNMKevuwDgE3W_xIshmclWw0pqQQOOnkW_GPbX304FAXyq0R7wZ-S98c3tEAGZE7gQUgfu9sfWrHw6U_cgalysLHRlzc3AGZya",
   ];
   var payload = {
     notification: {
