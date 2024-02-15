@@ -218,9 +218,17 @@ const createTransaction = async (req, res) => {
   try {
     const transactionData = req.body;
 
+    let finalAmount = transactionData?.totalAmount;
+    if (transactionData?.totalWithDiscount) {
+      finalAmount = transactionData?.totalWithDiscount;
+    }
+    if (transactionData?.totalCashback) {
+      finalAmount -= transactionData?.totalCashback;
+    }
+    finalAmount = "Rp. " + finalAmount.toLocaleString();
     sendNotification({
       title: "New transaction - " + transactionData?.kasir,
-      body: transactionData.buyer + " - " + transactionData.totalAmount,
+      body: transactionData.buyer + " - " + finalAmount,
     });
 
     return;

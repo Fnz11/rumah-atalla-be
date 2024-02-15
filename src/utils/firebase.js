@@ -1,6 +1,8 @@
 const admin = require("firebase-admin");
 const { findAllUsers } = require("../users/userServices");
 const serviceAccount = require("../credentials/serviceAccountKey.json");
+const imageUrl =
+  "https://res.cloudinary.com/djqay12rt/image/upload/w_100,h_100,c_fill/v1708009754/pfxxlsnk2zvryivcpcmd.png";
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -33,10 +35,12 @@ const sendNotification = ({ title, body }) => {
     notification: {
       title: title,
       body: body,
+      image: imageUrl,
     },
     data: {
       title: title,
       body: body,
+      imageUrl: imageUrl,
     },
   };
   var options = {
