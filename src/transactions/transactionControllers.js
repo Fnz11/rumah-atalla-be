@@ -10,12 +10,7 @@ const { changeProduct } = require("../products/productServices");
 const { findUserById, changeUser } = require("../users/userServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
-const admin = require("firebase-admin");
-const serviceAccount = require("../credentials/serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const { sendNotification } = require("../utils/firebase.js");
 
 const getAllTransactions = async (req, res) => {
   try {
@@ -223,14 +218,12 @@ const createTransaction = async (req, res) => {
   try {
     const transactionData = req.body;
 
-    // SEND NOTIFICATION TO OWNER
-    admin.messaging().send({
-      notification: {
-        title: "Transaksi Baru",
-        body: "Ada transaksi baru di akun Anda",
-      },
-      topic: "owner_notifications",
+    sendNotification({
+      title: "New Transaction",
+      body: "New transaction has been created",
     });
+
+    return;
 
     // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
