@@ -215,9 +215,8 @@ const getTransactionById = async (req, res) => {
 };
 
 const createTransaction = async (req, res) => {
+  const transactionData = req.body;
   try {
-    const transactionData = req.body;
-
     let finalAmount = transactionData?.totalAmount;
     if (transactionData?.totalWithDiscount) {
       finalAmount = transactionData?.totalWithDiscount;
@@ -230,8 +229,6 @@ const createTransaction = async (req, res) => {
       title: "New transaction - " + transactionData?.kasir,
       body: transactionData.buyer + " - " + finalAmount,
     });
-
-    return;
 
     // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
