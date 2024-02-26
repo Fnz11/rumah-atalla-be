@@ -11,6 +11,10 @@ const { findUserById, changeUser } = require("../users/userServices");
 const path = require("path");
 const { Workbook } = require("exceljs");
 const { sendNotification } = require("../utils/firebase.js");
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilio = require("twilio");
+const client = new twilio(accountSid, authToken);
 
 const getAllTransactions = async (req, res) => {
   try {
@@ -214,21 +218,73 @@ const getTransactionById = async (req, res) => {
   }
 };
 
+const sendWhatsAppMessage = async (to, message) => {
+  try {
+    client.messages
+      .create({
+        body: message,
+        from: "whatsapp:+14155238886",
+        to: "whatsapp:" + to,
+      })
+      .then((message) => console.log(message.sid));
+  } catch (error) {
+    console.error(`Failed to send message: ${error}`);
+  }
+};
+
+const sendNotificationFirebase = async (transactionData) => {
+  let finalAmount = transactionData?.totalAmount;
+  if (transactionData?.totalWithDiscount) {
+    finalAmount = transactionData?.totalWithDiscount;
+  }
+  if (transactionData?.totalCashback) {
+    finalAmount -= transactionData?.totalCashback;
+  }
+  finalAmount = "Rp. " + finalAmount.toLocaleString();
+  sendNotification({
+    title: "New transaction - " + transactionData?.kasir,
+    body: transactionData.buyer + " - " + finalAmount,
+  });
+};
+
+// sendWhatsAppMessage("+6283175022933", "Hello from Twilio WhatsApp API!");
+
 const createTransaction = async (req, res) => {
   const transactionData = req.body;
   try {
-    let finalAmount = transactionData?.totalAmount;
-    if (transactionData?.totalWithDiscount) {
-      finalAmount = transactionData?.totalWithDiscount;
-    }
-    if (transactionData?.totalCashback) {
-      finalAmount -= transactionData?.totalCashback;
-    }
-    finalAmount = "Rp. " + finalAmount.toLocaleString();
-    sendNotification({
-      title: "New transaction - " + transactionData?.kasir,
-      body: transactionData.buyer + " - " + finalAmount,
+    let message = `*Buyer: ${transactionData.buyer}*\n`;
+    message += `*Kasir: ${transactionData.kasir}*\n`;
+    transactionData.products.forEach((product, index) => {
+      let isDiscount = product.price !== product.discount;
+      let isCashback = product.cashback !== 0;
+      let price = product.price / product.qty;
+      let discount = (product.discount - product.price) / product.qty;
+      let cashback = product.cashback / product.qty;
+      if (isDiscount) {
+        price = product.discount / product.qty;
+      }
+      message += `\n${index + 1}. ${
+        product.name
+      } - Rp ${price.toLocaleString()}${
+        isDiscount ? " (Diskon Rp " + discount.toLocaleString() + ")" : ""
+      }${
+        isCashback ? " (Cashback +Rp " + cashback.toLocaleString() + ")" : ""
+      }, Qty: ${product.qty}, *Total: Rp ${(
+        price * product.qty
+      ).toLocaleString()}*\n`;
     });
+    if (transactionData.totalCashback > 0) {
+      message += `\nCashback: +Rp ${transactionData.totalCashback.toLocaleString()}\n`;
+    }
+    if (transactionData.totalDiscount > 0) {
+      message += `\nDiskon: -Rp ${(
+        transactionData.totalDiscount - transactionData.totalAmount
+      ).toLocaleString()}\n`;
+      message += `\nNormal: Rp ${transactionData.totalAmount.toLocaleString()}\n`;
+    }
+    message += `\n*Total: Rp ${transactionData.totalWithDiscount.toLocaleString()}*\n`;
+    sendWhatsAppMessage("+6283175022933", message); // Replace with your phone number
+    sendNotificationFirebase(transactionData);
 
     // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
