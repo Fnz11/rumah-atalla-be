@@ -37,7 +37,7 @@ const getProductById = async (req, res) => {
 const downloadFashionProductsData = async (req, res) => {
   try {
     const productsData = await findAllProducts();
-
+    console.log(productsData);
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Fashions Products");
 
@@ -70,22 +70,26 @@ const downloadFashionProductsData = async (req, res) => {
       return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
-    productsData.forEach((data) => {
-      const dataRow = worksheet.addRow([
-        data?._id?.toString(),
-        formatCreatedAt(data.createdAt),
-        data?.name,
-        data?.description,
-        "Rp. " + data?.price.toLocaleString(),
-        capitalize(data?.store),
-        data?.stock + " pcs",
-      ]);
-      applyStyling(dataRow);
+    productsData.forEach((product) => {
+      product.variants.forEach((variant) => {
+        variant.size.forEach((s) => {
+          const dataRow = worksheet.addRow([
+            product?._id?.toString(),
+            formatCreatedAt(product.createdAt),
+            product?.name + " - " + variant.name + " - " + s.size,
+            product?.description,
+            "Rp. " + s?.price.toLocaleString(),
+            capitalize(product?.store),
+            s?.stock + " pcs",
+          ]);
+          applyStyling(dataRow);
+        });
+      });
     });
 
     const numColumns = worksheet.columns.length;
     for (let i = 1; i <= numColumns; i++) {
-      worksheet.getColumn(i).width = 30;
+      worksheet.getColumn(i).width = 35;
     }
 
     const excelPath = path.join(__dirname, "../excel/FashionProductsData.xlsx");
