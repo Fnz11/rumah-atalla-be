@@ -6,7 +6,7 @@ const {
   createTransaction,
   updateTransaction,
   downloadFashionsTransaction,
-  downloadFoodsTransaction
+  downloadFoodsTransaction,
   //   deleteTransaction,
 } = require("../transactions/transactionControllers");
 const { authenticateToken } = require("../middleware/requireAuth");
@@ -18,7 +18,7 @@ router.get("/", authenticateToken, getAllTransactions);
 router.get("/:transactionId", authenticateToken, getTransactionById);
 
 // CREATE
-router.post("/",authenticateToken, createTransaction);
+router.post("/", authenticateToken, createTransaction);
 
 // DOWNLOAD FASHIONS
 router.get("/fashions/download", downloadFashionsTransaction);
@@ -27,7 +27,7 @@ router.get("/fashions/download", downloadFashionsTransaction);
 router.get("/foods/download", downloadFoodsTransaction);
 
 // // UPDATE
-router.patch("/:transactionId",authenticateToken, updateTransaction);
+router.patch("/:transactionId", authenticateToken, updateTransaction);
 
 // // DELETE
 // router.delete("/:transactionId", deleteTransaction);

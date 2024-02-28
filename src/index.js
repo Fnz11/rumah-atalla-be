@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI;
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://rumah-atalla.vercel.app"],
+  origin: "*",
   methods: ["GET", "POST", "PATCH", "DELETE"],
 };
 

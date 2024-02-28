@@ -8,24 +8,28 @@ const {
   deleteProduct,
   downloadFashionProductsData,
 } = require("../products/productControllers");
-const { authenticateToken } = require("../middleware/requireAuth");
+const { authenticateTokenOwner } = require("../middleware/requireAuthOwner");
 
 // GET ALL
 router.get("/", getAllProducts);
 
 // GET ALL
-router.get("/data/download", downloadFashionProductsData);
+router.get(
+  "/data/download",
+  authenticateTokenOwner,
+  downloadFashionProductsData
+);
 
 // GET ONE
 router.get("/:productId", getProductById);
 
 // CREATE
-router.post("/", createProduct);
+router.post("/", authenticateTokenOwner, createProduct);
 
 // UPDATE
-router.patch("/:productId", authenticateToken, updateProduct);
+router.patch("/:productId", authenticateTokenOwner, updateProduct);
 
 // DELETE
-router.delete("/:productId", authenticateToken, deleteProduct);
+router.delete("/:productId", authenticateTokenOwner, deleteProduct);
 
 module.exports = router;
