@@ -15,6 +15,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilio = require("twilio");
 const client = new twilio(accountSid, authToken);
+const cloudinary = require("cloudinary").v2;
 
 const getAllTransactions = async (req, res) => {
   try {
@@ -44,6 +45,7 @@ const downloadFoodsTransaction = async (req, res) => {
       "ID",
       "Date",
       "Kasir",
+      "Kustomer",
       "Products",
       "Discount",
       "Price",
@@ -74,6 +76,7 @@ const downloadFoodsTransaction = async (req, res) => {
           transaction?._id?.toString(),
           formatCreatedAt(transaction.createdAt),
           transaction.kasir,
+          transaction.buyer,
           newProductsTransaction,
           "Rp. " + Discount.toLocaleString(),
           "Rp. " + (transaction?.totalAmount ?? 0).toLocaleString(),
@@ -92,18 +95,24 @@ const downloadFoodsTransaction = async (req, res) => {
       worksheet.getColumn(i).width = 30;
     }
 
-    const excelPath = path.join(__dirname, "../excel/FoodsPromo.xlsx");
-    await workbook.xlsx.writeFile(excelPath);
+    // Write Excel file to buffer
+    const excelBuffer = await workbook.xlsx.writeBuffer();
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    // Upload Excel file to Cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload_stream(
+      { resource_type: "raw", public_id: "FoodsTransactions.xlsx" },
+      (error, result) => {
+        if (error) {
+          console.error(error);
+          return res
+            .status(500)
+            .json({ error: "Failed to upload file to Cloudinary" });
+        }
+        // Return Cloudinary URL as response
+        res.status(200).json({ fileUrl: result.secure_url });
+      }
     );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=FoodsPromo.xlsx"
-    );
-    res.sendFile(excelPath);
+    cloudinaryResponse.end(excelBuffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -112,6 +121,7 @@ const downloadFoodsTransaction = async (req, res) => {
 const downloadFashionsTransaction = async (req, res) => {
   try {
     const transactionsWeb = await findAllTransactions();
+    console.log(transactionsWeb[transactionsWeb.length - 1].products);
 
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Transactions");
@@ -128,6 +138,7 @@ const downloadFashionsTransaction = async (req, res) => {
       "ID",
       "Date",
       "Kasir",
+      "Kustomer",
       "Store",
       "Products",
       "Discount",
@@ -149,7 +160,10 @@ const downloadFashionsTransaction = async (req, res) => {
         transaction.status === "successed"
       ) {
         const newProductsTransaction = transaction.products
-          .map((product) => product.name)
+          .map(
+            (product) =>
+              product.name + ", " + product.qty + ", " + product.discount
+          )
           .join("\n");
 
         let Discount;
@@ -166,6 +180,7 @@ const downloadFashionsTransaction = async (req, res) => {
           transaction?._id?.toString(),
           formatCreatedAt(transaction.createdAt),
           transaction.kasir,
+          transaction.buyer,
           capitalize(transaction.store),
           newProductsTransaction,
           "Rp. " + Discount.toLocaleString(),
@@ -185,21 +200,26 @@ const downloadFashionsTransaction = async (req, res) => {
       worksheet.getColumn(i).width = 30;
     }
 
-    const excelPath = path.join(
-      __dirname,
-      "../excel/FashionsTransactions.xlsx"
-    );
-    await workbook.xlsx.writeFile(excelPath);
+    // Menulis file Excel ke buffer
+    const excelBuffer = await workbook.xlsx.writeBuffer();
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=FashionsTransactions.xlsx"
-    );
-    res.sendFile(excelPath);
+    // Upload file Excel ke Cloudinary dengan menambahkan ekstensi .xlsx ke nama file
+    cloudinary.uploader
+      .upload_stream(
+        { resource_type: "raw", public_id: "FashionsTransactions.xlsx" },
+        async (error, result) => {
+          if (error) {
+            console.error(error);
+            return res
+              .status(500)
+              .json({ error: "Failed to upload file to Cloudinary" });
+          }
+
+          // Set header dan kirim URL Cloudinary sebagai respons
+          res.status(200).json({ fileUrl: result.secure_url });
+        }
+      )
+      .end(excelBuffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
