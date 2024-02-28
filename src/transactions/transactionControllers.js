@@ -121,7 +121,6 @@ const downloadFoodsTransaction = async (req, res) => {
 const downloadFashionsTransaction = async (req, res) => {
   try {
     const transactionsWeb = await findAllTransactions();
-    console.log(transactionsWeb[transactionsWeb.length - 1].products);
 
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Transactions");
@@ -202,6 +201,7 @@ const downloadFashionsTransaction = async (req, res) => {
 
     // Menulis file Excel ke buffer
     const excelBuffer = await workbook.xlsx.writeBuffer();
+    console.log("TETEEEEEZZZT");
 
     // Upload file Excel ke Cloudinary dengan menambahkan ekstensi .xlsx ke nama file
     cloudinary.uploader
