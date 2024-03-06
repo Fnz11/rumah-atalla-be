@@ -9,13 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_URI = process.env.DB_URI;
 
-const corsOptions = {
-  origin: "*",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
-};
+// const corsOptions = {
+//   origin: "*",
+//   methods: ["GET", "POST", "PATCH", "DELETE"],
+// };
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
