@@ -33,68 +33,69 @@ const getPromoById = async (req, res) => {
 
 const downloadFashionsPromo = async (req, res) => {
   try {
-    const promos = await findAllPromos();
+    // const promos = await findAllPromos();
 
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet("Promo Data");
+    // const workbook = new Workbook();
+    // const worksheet = workbook.addWorksheet("Promo Data");
 
-    const applyStyling = (row) => {
-      row.alignment = {
-        wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
-      };
-    };
+    // const applyStyling = (row) => {
+    //   row.alignment = {
+    //     wrapText: true,
+    //     vertical: "middle",
+    //     horizontal: "center",
+    //   };
+    // };
 
-    const headerRow = worksheet.addRow([
-      "ID",
-      "Create At",
-      "Name",
-      "Products",
-      "Type",
-      "Value",
-      "Date",
-    ]);
-    headerRow.font = { bold: true };
-    applyStyling(headerRow);
+    // const headerRow = worksheet.addRow([
+    //   "ID",
+    //   "Create At",
+    //   "Name",
+    //   "Products",
+    //   "Type",
+    //   "Value",
+    //   "Date",
+    // ]);
+    // headerRow.font = { bold: true };
+    // applyStyling(headerRow);
 
-    const formatDate = (createdAt) => {
-      const dateObject = new Date(createdAt);
-      return dateObject.toLocaleDateString();
-    };
+    // const formatDate = (createdAt) => {
+    //   const dateObject = new Date(createdAt);
+    //   return dateObject.toLocaleDateString();
+    // };
 
-    promos.forEach((promo) => {
-      if (promo.for === "fashions") {
-        const newPromo = promo?.products.map((product) => product).join("\n");
+    // promos.forEach((promo) => {
+    //   if (promo.for === "fashions") {
+    //     const newPromo = promo?.products.map((product) => product).join("\n");
 
-        let Date =
-          formatDate(promo?.date.startDate) +
-          " - " +
-          formatDate(promo?.date.endDate);
-        const capitalize = (str) => {
-          return str.charAt(0).toUpperCase() + str.slice(1);
-        };
+    //     let Date =
+    //       formatDate(promo?.date.startDate) +
+    //       " - " +
+    //       formatDate(promo?.date.endDate);
+    //     const capitalize = (str) => {
+    //       return str.charAt(0).toUpperCase() + str.slice(1);
+    //     };
 
-        const dataRow = worksheet.addRow([
-          promo?._id?.toString(),
-          formatDate(promo.createdAt),
-          promo?.name,
-          newPromo,
-          capitalize(promo?.type),
-          promo?.value,
-          Date,
-        ]);
-        applyStyling(dataRow);
-      }
-    });
+    //     const dataRow = worksheet.addRow([
+    //       promo?._id?.toString(),
+    //       formatDate(promo.createdAt),
+    //       promo?.name,
+    //       newPromo,
+    //       capitalize(promo?.type),
+    //       promo?.value,
+    //       Date,
+    //     ]);
+    //     applyStyling(dataRow);
+    //   }
+    // });
 
-    const numColumns = worksheet.columns.length;
-    for (let i = 1; i <= numColumns; i++) {
-      worksheet.getColumn(i).width = 30;
-    }
+    // const numColumns = worksheet.columns.length;
+    // for (let i = 1; i <= numColumns; i++) {
+    //   worksheet.getColumn(i).width = 30;
+    // }
 
     const excelPath = path.join(__dirname, "../excel/FashionsPromo.xlsx");
-    await workbook.xlsx.writeFile(excelPath);
+    console.log(excelPath)
+    // await workbook.xlsx.writeFile(excelPath);
 
     res.setHeader(
       "Content-Type",
