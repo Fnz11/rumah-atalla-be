@@ -111,15 +111,23 @@ const downloadUsersData = async (req, res) => {
       worksheet.getColumn(i).width = 30;
     }
 
-    const excelPath = path.join(__dirname, "../excel/UsersData.xlsx");
-    await workbook.xlsx.writeFile(excelPath);
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+    cloudinary.uploader
+      .upload_stream(
+        { resource_type: "raw", public_id: "usersData.xlsx" },
+        async (error, result) => {
+          if (error) {
+            console.error(error);
+            return res
+              .status(500)
+              .json({ error: "Failed to upload file to Cloudinary" });
+          }
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", "attachment; filename=UsersData.xlsx");
-    res.sendFile(excelPath);
+          // Set header dan kirim URL Cloudinary sebagai respons
+          res.status(200).json({ fileUrl: result.secure_url });
+        }
+      )
+      .end(excelBuffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

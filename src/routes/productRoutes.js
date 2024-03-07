@@ -13,7 +13,7 @@ const { authenticateTokenOwner } = require("../middleware/requireAuthOwner");
 // GET ALL
 router.get("/", getAllProducts);
 
-// GET ALL
+// DOWNLOAD
 router.get(
   "/data/download",
   authenticateTokenOwner,

@@ -91,19 +91,24 @@ const downloadFashionProductsData = async (req, res) => {
     for (let i = 1; i <= numColumns; i++) {
       worksheet.getColumn(i).width = 35;
     }
+    console.log("tessssss")
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+    cloudinary.uploader
+      .upload_stream(
+        { resource_type: "raw", public_id: "FashionsProducts.xlsx" },
+        async (error, result) => {
+          if (error) {
+            console.error(error);
+            return res
+              .status(500)
+              .json({ error: "Failed to upload file to Cloudinary" });
+          }
 
-    const excelPath = path.join(__dirname, "../excel/FashionProductsData.xlsx");
-    await workbook.xlsx.writeFile(excelPath);
-
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=FashionProductsData.xlsx"
-    );
-    res.sendFile(excelPath);
+          // Set header dan kirim URL Cloudinary sebagai respons
+          res.status(200).json({ fileUrl: result.secure_url });
+        }
+      )
+      .end(excelBuffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

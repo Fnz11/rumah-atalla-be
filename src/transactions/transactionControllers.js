@@ -97,7 +97,7 @@ const downloadFoodsTransaction = async (req, res) => {
 
     // Write Excel file to buffer
     const excelBuffer = await workbook.xlsx.writeBuffer();
-    console.log("TEST")
+    console.log("TEST");
     // Upload Excel file to Cloudinary
     const cloudinaryResponse = await cloudinary.uploader.upload_stream(
       { resource_type: "raw", public_id: "FoodsTransactions.xlsx" },
@@ -221,8 +221,6 @@ const downloadFashionsTransaction = async (req, res) => {
         }
       )
       .end(excelBuffer);
-
-    return res.status(200).json({ fileUrl: "https://res.cloudinary.com/djqay12rt/raw/upload/v1709695806/FoodsTransactions.xlsx"});
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -311,7 +309,7 @@ const createTransaction = async (req, res) => {
 
     // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
-      console.log("DADA", transactionData)
+      console.log("DADA", transactionData);
       transactionData?.products?.map(async (product) => {
         const newProduct = await changeFood(product.productId, {
           stock: product.stock - product.qty,
