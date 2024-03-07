@@ -121,106 +121,106 @@ const downloadFoodsTransaction = async (req, res) => {
 
 const downloadFashionsTransaction = async (req, res) => {
   try {
-    // const transactionsWeb = await findAllTransactions();
+    const transactionsWeb = await findAllTransactions();
 
-    // const workbook = new Workbook();
-    // const worksheet = workbook.addWorksheet("Transactions");
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet("Transactions");
 
-    // const applyStyling = (row) => {
-    //   row.alignment = {
-    //     wrapText: true,
-    //     vertical: "middle",
-    //     horizontal: "center",
-    //   };
-    // };
+    const applyStyling = (row) => {
+      row.alignment = {
+        wrapText: true,
+        vertical: "middle",
+        horizontal: "center",
+      };
+    };
 
-    // const headerRow = worksheet.addRow([
-    //   "ID",
-    //   "Date",
-    //   "Kasir",
-    //   "Kustomer",
-    //   "Store",
-    //   "Products",
-    //   "Discount",
-    //   "Price",
-    //   "Total Price",
-    //   "Cashback",
-    // ]);
-    // headerRow.font = { bold: true };
-    // applyStyling(headerRow);
+    const headerRow = worksheet.addRow([
+      "ID",
+      "Date",
+      "Kasir",
+      "Kustomer",
+      "Store",
+      "Products",
+      "Discount",
+      "Price",
+      "Total Price",
+      "Cashback",
+    ]);
+    headerRow.font = { bold: true };
+    applyStyling(headerRow);
 
-    // const formatCreatedAt = (createdAt) => {
-    //   const dateObject = new Date(createdAt);
-    //   return dateObject.toLocaleDateString();
-    // };
+    const formatCreatedAt = (createdAt) => {
+      const dateObject = new Date(createdAt);
+      return dateObject.toLocaleDateString();
+    };
 
-    // transactionsWeb.forEach((transaction) => {
-    //   if (
-    //     transaction.type === "fashions" &&
-    //     transaction.status === "successed"
-    //   ) {
-    //     const newProductsTransaction = transaction.products
-    //       .map(
-    //         (product) =>
-    //           product.name + ", " + product.qty + ", " + product.discount
-    //       )
-    //       .join("\n");
+    transactionsWeb.forEach((transaction) => {
+      if (
+        transaction.type === "fashions" &&
+        transaction.status === "successed"
+      ) {
+        const newProductsTransaction = transaction.products
+          .map(
+            (product) =>
+              product.name + ", " + product.qty + ", " + product.discount
+          )
+          .join("\n");
 
-    //     let Discount;
-    //     if (transaction?.totalWithDiscount) {
-    //       Discount = transaction?.totalWithDiscount - transaction?.totalAmount;
-    //     } else {
-    //       Discount = 0;
-    //     }
-    //     const capitalize = (str) => {
-    //       return str.charAt(0).toUpperCase() + str.slice(1);
-    //     };
+        let Discount;
+        if (transaction?.totalWithDiscount) {
+          Discount = transaction?.totalWithDiscount - transaction?.totalAmount;
+        } else {
+          Discount = 0;
+        }
+        const capitalize = (str) => {
+          return str.charAt(0).toUpperCase() + str.slice(1);
+        };
 
-    //     const dataRow = worksheet.addRow([
-    //       transaction?._id?.toString(),
-    //       formatCreatedAt(transaction.createdAt),
-    //       transaction.kasir,
-    //       transaction.buyer,
-    //       capitalize(transaction.store),
-    //       newProductsTransaction,
-    //       "Rp. " + Discount.toLocaleString(),
-    //       "Rp. " + (transaction?.totalAmount ?? 0).toLocaleString(),
-    //       "Rp. " +
-    //         (
-    //           transaction?.totalWithDiscount ?? transaction?.totalAmount
-    //         ).toLocaleString(),
-    //       "Rp. " + (transaction?.totalCashback ?? 0).toLocaleString(),
-    //     ]);
-    //     applyStyling(dataRow);
-    //   }
-    // });
+        const dataRow = worksheet.addRow([
+          transaction?._id?.toString(),
+          formatCreatedAt(transaction.createdAt),
+          transaction.kasir,
+          transaction.buyer,
+          capitalize(transaction.store),
+          newProductsTransaction,
+          "Rp. " + Discount.toLocaleString(),
+          "Rp. " + (transaction?.totalAmount ?? 0).toLocaleString(),
+          "Rp. " +
+            (
+              transaction?.totalWithDiscount ?? transaction?.totalAmount
+            ).toLocaleString(),
+          "Rp. " + (transaction?.totalCashback ?? 0).toLocaleString(),
+        ]);
+        applyStyling(dataRow);
+      }
+    });
 
-    // const numColumns = worksheet.columns.length;
-    // for (let i = 1; i <= numColumns; i++) {
-    //   worksheet.getColumn(i).width = 30;
-    // }
+    const numColumns = worksheet.columns.length;
+    for (let i = 1; i <= numColumns; i++) {
+      worksheet.getColumn(i).width = 30;
+    }
 
-    // // Menulis file Excel ke buffer
-    // const excelBuffer = await workbook.xlsx.writeBuffer();
-    // console.log("TETEEEEEZZZT");
+    // Menulis file Excel ke buffer
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+    console.log("TETEEEEEZZZT");
 
-    // // Upload file Excel ke Cloudinary dengan menambahkan ekstensi .xlsx ke nama file
-    // cloudinary.uploader
-    //   .upload_stream(
-    //     { resource_type: "raw", public_id: "FashionsTransactions.xlsx" },
-    //     async (error, result) => {
-    //       if (error) {
-    //         console.error(error);
-    //         return res
-    //           .status(500)
-    //           .json({ error: "Failed to upload file to Cloudinary" });
-    //       }
+    // Upload file Excel ke Cloudinary dengan menambahkan ekstensi .xlsx ke nama file
+    cloudinary.uploader
+      .upload_stream(
+        { resource_type: "raw", public_id: "FashionsTransactions.xlsx" },
+        async (error, result) => {
+          if (error) {
+            console.error(error);
+            return res
+              .status(500)
+              .json({ error: "Failed to upload file to Cloudinary" });
+          }
 
-    //       // Set header dan kirim URL Cloudinary sebagai respons
-    //       res.status(200).json({ fileUrl: result.secure_url });
-    //     }
-    //   )
-    //   .end(excelBuffer);
+          // Set header dan kirim URL Cloudinary sebagai respons
+          res.status(200).json({ fileUrl: result.secure_url });
+        }
+      )
+      .end(excelBuffer);
 
     return res.status(200).json({ fileUrl: "https://res.cloudinary.com/djqay12rt/raw/upload/v1709695806/FoodsTransactions.xlsx"});
   } catch (error) {
@@ -311,6 +311,7 @@ const createTransaction = async (req, res) => {
 
     // UPDATE STCOK PRODUCT
     if (transactionData?.type === "foods") {
+      console.log("DADA", transactionData)
       transactionData?.products?.map(async (product) => {
         const newProduct = await changeFood(product.productId, {
           stock: product.stock - product.qty,

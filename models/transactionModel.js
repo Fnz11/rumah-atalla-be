@@ -70,7 +70,6 @@ const transactionSchema = new mongoose.Schema({
   },
   qty: {
     type: Number,
-    required: true,
   },
   status: {
     type: String,
