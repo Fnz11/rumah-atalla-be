@@ -17,7 +17,12 @@ const createUser = async (userData) => {
 };
 
 const updateUser = async (userId, updatedData) => {
-  return await User.findByIdAndUpdate(userId, updatedData, { new: true });
+  try {
+    console.log("CHANGECHANGE", updatedData);
+    return await User.findByIdAndUpdate(userId, updatedData, { new: true });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const deleteUser = async (userId) => {

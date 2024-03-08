@@ -10,6 +10,8 @@ const {
   signInUser,
   downloadUsersData,
   validateToken,
+  forgotPassword,
+  resetPassword,
 } = require("../users/userControllers");
 const { authenticateToken } = require("../middleware/requireAuth");
 const { authenticateTokenOwner } = require("../middleware/requireAuthOwner");
@@ -23,6 +25,11 @@ router.get("/data/download", downloadUsersData);
 // GET ONE BY ID
 router.get("/:userId", getUserById);
 
+// FORGET PASSWORD
+router.post("/forget-password", forgotPassword);
+
+// VALIDATE RESET PASSWORD TOKEN
+router.post("/reset-password/", resetPassword);
 
 // SIGN UP
 router.post("/signup", authenticateTokenOwner, createUser);

@@ -8,7 +8,9 @@ const {
   deleteProduct,
   downloadFashionProductsData,
 } = require("../products/productControllers");
-const { authenticateTokenOwner } = require("../middleware/requireAuthOwner");
+const {
+  authenticateTokenProductManager,
+} = require("../middleware/requireAuthProductManager");
 
 // GET ALL
 router.get("/", getAllProducts);
@@ -16,7 +18,7 @@ router.get("/", getAllProducts);
 // DOWNLOAD
 router.get(
   "/data/download",
-  authenticateTokenOwner,
+  authenticateTokenProductManager,
   downloadFashionProductsData
 );
 
@@ -24,12 +26,12 @@ router.get(
 router.get("/:productId", getProductById);
 
 // CREATE
-router.post("/", authenticateTokenOwner, createProduct);
+router.post("/", authenticateTokenProductManager, createProduct);
 
 // UPDATE
-router.patch("/:productId", authenticateTokenOwner, updateProduct);
+router.patch("/:productId", authenticateTokenProductManager, updateProduct);
 
 // DELETE
-router.delete("/:productId", authenticateTokenOwner, deleteProduct);
+router.delete("/:productId", authenticateTokenProductManager, deleteProduct);
 
 module.exports = router;

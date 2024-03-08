@@ -19,7 +19,6 @@ const reloadUserToken = async () => {
         }
       });
     }
-    console.log(tokens);
   } catch (error) {
     console.log(error);
   }

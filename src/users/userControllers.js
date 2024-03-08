@@ -12,6 +12,7 @@ const {
 const path = require("path");
 const { Workbook } = require("exceljs");
 const cloudinary = require("../utils/cloudinary");
+const nodemailer = require("nodemailer");
 
 const SALT_ROUNDS = 10;
 
@@ -146,7 +147,6 @@ const deleteUser = async (req, res) => {
 const signInUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("WOIOWIOIOIO", email, password);
 
     // Cari pengguna berdasarkan email
     const user = await findUserByEmail(email);
@@ -156,10 +156,9 @@ const signInUser = async (req, res) => {
     // Bandingkan password yang dimasukkan dengan password yang di-hash
     // console.log(password, user[0].password);
     const isValidPassword = await bcrypt.compare(password, user[0].password);
-    // if (!isValidPassword) {
-    // return res.status(401).json({ message: "Invalid credentials" });
-    // }
-    console.log(user);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
     // Buat token JWT untuk autentikasi
     const token = jwt.sign(
       { userId: user[0]._id, username: user[0].username, role: user[0].role },
@@ -183,7 +182,6 @@ const validateToken = async (req, res) => {
     let decodedToken;
     try {
       decodedToken = jwt.verify(token, "mamaraffi");
-      console.log(decodedToken);
     } catch (error) {
       console.log(error);
       if (error.name === "TokenExpiredError") {
@@ -229,11 +227,134 @@ const createUser = async (req, res) => {
   }
 };
 
+// EMAIL TEXT
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "finz1112@gmail.com",
+    pass: "erqgylpgdrwiopoq",
+  },
+});
+
+const sendResetPasswordEmail = async (email, token) => {
+  try {
+    // Send mail with defined transport object
+    await transporter.sendMail({
+      from: "rumahatalla@gmail.com",
+      to: email,
+      subject: "Password Reset Request",
+      text: `To reset your password, please click on the following link: http://localhost:5173/reset-password/?token=${token}&email=${email}`,
+      html: `<p>To reset your password, please click on the following link: <a href="http://localhost:5173/reset-password/?token=${token}&email=${email}">Reset Password</a></p>`,
+    });
+
+    console.log("Password reset email sent successfully");
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw new Error("Error sending password reset email");
+  }
+};
+
+const generateUniqueToken = async ({ email }) => {
+  try {
+    const saltRounds = 10;
+    const expirationTime = 60 * 60 * 1000; // 60 minutes in milliseconds
+
+    const dateNow = Date.now();
+    const randomString = `${email}.${dateNow}`;
+
+    const token = await bcrypt.hash(randomString, saltRounds);
+
+    // Calculate expiration time
+    const expirationDate = new Date(dateNow + expirationTime);
+
+    return { token, expirationDate };
+  } catch (error) {
+    console.error("Error generating unique token:", error);
+    throw new Error("Error generating unique token");
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await findUserByEmail(email);
+
+    if (user.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { token, expirationDate } = await generateUniqueToken({ email });
+
+    storeData = {
+      resetPasswordToken: {
+        token: token,
+        expirationDate: expirationDate,
+      },
+    };
+    await changeUser(user[0]._id, storeData);
+
+    await sendResetPasswordEmail(email, token);
+
+    return res
+      .status(200)
+      .json({ message: "Reset password instructions sent to your email" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { newPassword, email, token } = req.body;
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!user[0].resetPasswordToken) {
+      return res.status(401).json({ message: "Token not found" });
+    }
+
+    const dateNow = Date.now();
+    // const expirationDate = new Date(user.resetPasswordToken.expirationDate);
+    // if (dateNow > expirationDate) {
+    //   return res.status(401).json({ message: "Token expired" });
+    // }
+
+    const isValidToken = token == user[0].resetPasswordToken.token;
+    console.log(newPassword, email, token, user[0]);
+
+    if (!isValidToken) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await changeUser(user[0]._id, {
+      resetPasswordToken: null,
+      password: hashedPassword,
+    });
+
+    return res.status(200).json({ token: user.resetPasswordToken });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const updatedData = req.body;
-  console.log(updatedData);
+  let updatedData = req.body;
   try {
+    if (updatedData?.password) {
+      if (updatedData.password === "") {
+        const { password, ...updatedDataWithoutPassword } = updatedData;
+        updatedData = updatedDataWithoutPassword;
+      } else {
+        const salt = await bcrypt.genSalt(SALT_ROUNDS);
+        updatedData.password = await bcrypt.hash(updatedData.password, salt);
+      }
+    }
+    console.log(updatedData)
     if (updatedData?.imageUrl?.url) {
       const result = await cloudinary.uploader.upload(
         updatedData.imageUrl.url,
@@ -267,4 +388,6 @@ module.exports = {
   signInUser,
   validateToken,
   downloadUsersData,
+  forgotPassword,
+  resetPassword,
 };

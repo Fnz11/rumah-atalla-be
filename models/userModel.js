@@ -18,27 +18,18 @@ const userSchema = new mongoose.Schema({
   FCMToken: {
     type: [String],
   },
+  resetPasswordToken: {
+    token: { type: String },
+    expirationDate: { type: Date },
+  },
   role: {
     type: String,
-    enum: ["admin", "owner"],
+    enum: ["admin", "owner", "product manager"],
     default: "admin",
   },
-  approved: {
-    type: Boolean,
-    default: false,
-  },
-  lamaOnline: {
-    type: Number,
-    default: false,
-  },
-
   createdAt: {
     type: Date,
     default: Date.now,
-  },
-  status: {
-    type: Boolean,
-    default: false,
   },
   imageUrl: {
     url: { type: String },
