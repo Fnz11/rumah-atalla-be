@@ -79,6 +79,7 @@ const transactionSchema = new mongoose.Schema({
   paymentVia: {
     type: String,
     enum: ["Cash", "BCA", "Mandiri"],
+    default: "Cash",
   },
   atasNamaRekening: {
     type: String,
