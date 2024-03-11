@@ -273,6 +273,19 @@ const sendNotificationFirebase = async (transactionData) => {
 const createTransaction = async (req, res) => {
   const transactionData = req.body;
   try {
+    if (transactionData?.buktiTransfer?.url) {
+      const result = await cloudinary.uploader.upload(
+        transactionData.buktiTransfer.url,
+        {
+          folder: "bukti transfer",
+        }
+      );
+      const newImage = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+      transactionData.buktiTransfer = newImage;
+    }
     let message = `*Buyer: ${transactionData.buyer}*\n`;
     message += `*Kasir: ${transactionData.kasir}*\n`;
     transactionData.products.forEach((product, index) => {
@@ -425,6 +438,8 @@ const createTransaction = async (req, res) => {
 
       await Promise.all(updateProducts);
     }
+
+    console.log("TENGETENGE");
 
     // UPDATE TRANSACTION IN KASIR
     const kasirData = await findUserById(transactionData?.kasirId);

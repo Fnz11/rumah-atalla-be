@@ -76,6 +76,23 @@ const transactionSchema = new mongoose.Schema({
     enum: ["pending", "successed", "canceled"],
     default: "pending",
   },
+  paymentVia: {
+    type: String,
+    enum: ["Cash", "BCA", "Mandiri"],
+  },
+  atasNamaRekening: {
+    type: String,
+  },
+  rekening: {
+    type: String,
+  },
+  buktiTransfer: {
+    url: { type: String },
+    public_id: { type: String },
+  },
+  nominal: {
+    type: Number,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
