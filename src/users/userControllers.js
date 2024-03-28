@@ -231,8 +231,8 @@ const createUser = async (req, res) => {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "finz1112@gmail.com",
-    pass: "erqgylpgdrwiopoq",
+    user: "rumahatalla365@gmail.com",
+    pass: process.env.EMAIL_APP_PASSWORD,
   },
 });
 
@@ -240,7 +240,7 @@ const sendResetPasswordEmail = async (email, token) => {
   try {
     // Send mail with defined transport object
     await transporter.sendMail({
-      from: "rumahatalla@gmail.com",
+      from: "rumahatalla365@gmail.com",
       to: email,
       subject: "Password Reset Request",
       text: `To reset your password, please click on the following link: http://localhost:5173/reset-password/?token=${token}&email=${email}`,
@@ -319,11 +319,11 @@ const resetPassword = async (req, res) => {
     // if (dateNow > expirationDate) {
     //   return res.status(401).json({ message: "Token expired" });
     // }
-
     const isValidToken = token == user[0].resetPasswordToken.token;
     console.log(newPassword, email, token, user[0]);
-
+    
     if (!isValidToken) {
+      console.log("test")
       return res.status(401).json({ message: "Invalid token" });
     }
 
@@ -354,7 +354,7 @@ const updateUser = async (req, res) => {
         updatedData.password = await bcrypt.hash(updatedData.password, salt);
       }
     }
-    console.log(updatedData)
+    console.log(updatedData);
     if (updatedData?.imageUrl?.url) {
       const result = await cloudinary.uploader.upload(
         updatedData.imageUrl.url,
