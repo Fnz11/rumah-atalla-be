@@ -243,8 +243,8 @@ const sendResetPasswordEmail = async (email, token) => {
       from: "rumahatalla365@gmail.com",
       to: email,
       subject: "Password Reset Request",
-      text: `To reset your password, please click on the following link: http://localhost:5173/reset-password/?token=${token}&email=${email}`,
-      html: `<p>To reset your password, please click on the following link: <a href="http://localhost:5173/reset-password/?token=${token}&email=${email}">Reset Password</a></p>`,
+      text: `To reset your password, please click on the following link: https://www.rumahatalla.my.id/reset-password/?token=${token}&email=${email}`,
+      html: `<p>To reset your password, please click on the following link: <a href="https://www.rumahatalla.my.id/reset-password/?token=${token}&email=${email}">Reset Password</a></p>`,
     });
 
     console.log("Password reset email sent successfully");
