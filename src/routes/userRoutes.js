@@ -17,7 +17,7 @@ const { authenticateToken } = require("../middleware/requireAuth");
 const { authenticateTokenOwner } = require("../middleware/requireAuthOwner");
 
 // GET ALL
-router.get("/", authenticateTokenOwner, getAllUsers);
+router.get("/", getAllUsers);
 
 // DOWNLOAD
 router.get("/data/download", downloadUsersData);
